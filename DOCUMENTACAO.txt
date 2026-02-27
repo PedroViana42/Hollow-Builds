@@ -1,0 +1,219 @@
+================================================================
+  ECOS DEVORADOS — DOCUMENTAÇÃO TÉCNICA DO MVP 0.1
+================================================================
+Data: 27/02/2026
+Status: Em desenvolvimento ativo
+
+----------------------------------------------------------------
+  VISÃO GERAL
+----------------------------------------------------------------
+Ecos Devorados é um roguelike auto-battler desenvolvido com
+React + TypeScript + Vite. O jogo possui um motor de combate
+baseado em eventos (perks), sistema de equipamentos, eventos
+narrativos e progressão por andares.
+
+================================================================
+  ESTRUTURA DE ARQUIVOS
+================================================================
+
+  src/
+  ├── engine/
+  │   ├── types.ts          — Interfaces e tipos globais
+  │   └── GameState.ts      — Motor de combate (core)
+  ├── data/
+  │   ├── registry.ts       — Templates de heróis e inimigos
+  │   ├── items.ts          — Banco de itens
+  │   ├── perks.ts          — Banco de perks
+  │   └── events.ts         — Banco de eventos narrativos
+  ├── hooks/
+  │   └── useGameLoop.ts    — Integração do motor com React
+  ├── App.tsx               — Componente principal e UI
+  ├── index.css             — Estilos globais
+  └── main.tsx              — Entry point
+
+================================================================
+  O QUE ESTÁ IMPLEMENTADO E COMO FOI FEITO
+================================================================
+
+----------------------------------------------------------------
+1. MOTOR DE COMBATE (src/engine/GameState.ts)
+----------------------------------------------------------------
+Implementação:
+  - Classe `GameState` que implementa a interface `IGameState`.
+  - Cada instância representa uma batalha única entre player e enemy.
+  - O construtor realiza cópia profunda (deep clone) manual das
+    entidades para evitar mutações nos templates estáticos.
+  - Aplica os modificadores de itens (equipamentos) ao criar a
+    entidade via `applyItemStats()`.
+
+Métodos principais:
+  - `tick()` — Um turno de combate. Player ataca, depois enemy.
+  - `attack(attacker, target)` — Calcula dano com chance de crítico.
+  - `dealDamage(...)` — Aplica dano, chama triggers de perks e
+    detecta morte (isGameOver = true).
+  - `heal(target, amount)` — Cura até o maxHp e aciona `onHeal`.
+  - `log(msg)` — Registra mensagens no combatLog (máx. 50 entradas).
+  - `triggerEvent(type, owner, payload)` — Percorre os perks do
+    dono e executa os que correspondem ao trigger recebido.
+
+Proteção contra recursão infinita:
+  - `triggerDepth` rastreia o nível atual de chamadas de perk.
+  - `MAX_RECURSION_DEPTH = 10` limita loops causados por perks
+    que se chamam mutuamente (ex: curar ao dar dano + dar dano
+    ao curar).
+
+----------------------------------------------------------------
+2. TIPOS E INTERFACES (src/engine/types.ts)
+----------------------------------------------------------------
+Definições criadas:
+  - `EntityStats` — hp, maxHp, damage, critChance.
+  - `Entity` — Estende EntityStats com id, name, perks, equipment.
+  - `Perk` — id, name, description, trigger (EventType), action().
+  - `Item` — id, name, type (weapon/armor/relic), statsModifiers.
+  - `GameEvent` — id, name, description, choices[].
+  - `GameEventChoice` — text, action(state).
+  - `IGameState` — Interface pública usada pelo React (separa a
+    classe dos componentes para facilitar testes futuros).
+  - `EventType` — Union type dos triggers de perks:
+    'onHit' | 'onCriticalHit' | 'onDamageTaken' | 'onKill' | 'onHeal'
+
+----------------------------------------------------------------
+3. BANCO DE DADOS ESTÁTICO (src/data/)
+----------------------------------------------------------------
+
+registry.ts — Heróis e inimigos:
+  - HEROES.ERRANTE: hp=80, damage=12, critChance=0.15 (foco em crit)
+  - HEROES.SOBREVIVENTE: hp=100, damage=10, critChance=0.10 (tanque)
+  - ENEMIES: 4 inimigos com dificuldade crescente
+      MONSTRO_GENERICO_1 → MONSTRO_GENERICO_2 →
+      O_CARCEREIRO → FRAGMENTO_DO_DEVORADOR
+
+items.ts — 6 itens divididos em 3 tipos:
+  - Weapons: Adaga do Errante (+3 damage, +5% crit), Hacha Dura (+5 dmg)
+  - Armors: Cota de Malha Rasgada (+15 hp), Veste de Espinhos (+10 hp)
+  - Relics: Amuleto de Sangue (+2 dmg, +5 hp), Olho de Cristal (+10% crit)
+
+perks.ts — 12 perks categorizados por trigger:
+  - onHit: Fúria Focada (dano extra em acertos), Lâmina Sanguessuga (cura)
+  - onCriticalHit: Golpe Duplo (ataque extra), Sede de Sangue (cura maior)
+  - onDamageTaken: Escudo de Adrenalina (redução de dano),
+                   Sangue Fervente (contra-ataque)
+  - onKill: Ímpeto de Predador (+dano temporário), Eco do Devorado (cura)
+  - onHeal: Absorção de Vida (+hp máximo), Metabolismo Acelerado (+crit)
+
+events.ts — 6 eventos narrativos com 2 escolhas cada:
+  - Arena Silenciosa: +2 dmg ou +10% crit
+  - Câmara dos Espinhos: -10 hp (com benefício futuro) ou item
+  - Altar das Brasas: -15 hp +5 dmg permanente ou cura total
+  - Acampamento: Cura 30% HP ou +1 dmg
+  - Biblioteca Esquecida: Segredo de guerra (narrativo)
+  - Eco Perdido: +5 Max HP ou +5% crit
+
+  Cada `choice.action(state)` modifica diretamente as
+  propriedades do `state.player` ou chama métodos como
+  `state.heal()`.
+
+----------------------------------------------------------------
+4. GAME LOOP (src/hooks/useGameLoop.ts)
+----------------------------------------------------------------
+Implementação:
+  - Hook personalizado que encapsula o `GameState` e o expõe
+    ao React de forma segura.
+  - Usa `useRef<GameState>` para manter a mesma instância entre
+    renders (evita recriação do motor a cada render do React).
+  - Usa `useState<IGameState>` (snapshot) para forçar re-renders
+    quando o estado do jogo muda.
+  - O `setInterval` de 500ms chama `gameStateRef.current.tick()`
+    e depois atualiza o snapshot com `updateSnapshot()`.
+
+Problema resolvido (snapshots perdendo métodos):
+  - O spread `{ ...gameStateRef.current }` copiava apenas as
+    propriedades, descartando os métodos da classe.
+  - Solução: `updateSnapshot()` agora reconecta explicitamente
+    os métodos com `.bind(current)`:
+      log, heal, dealDamage, getOpponent, tick
+
+Funções expostas pelo hook:
+  - `startGame()` — Inicia o interval (isRunning = true)
+  - `pauseGame()` — Para o interval
+  - `resetGame()` — Cria novo GameState e reinicia tudo
+
+----------------------------------------------------------------
+5. INTERFACE E FLUXO DE JOGO (src/App.tsx)
+----------------------------------------------------------------
+Fases do jogo (GamePhase):
+  SELECT_HERO → BATTLE → MAP_SELECTION → EVENT (opcional)
+                                       → BATTLE (próxima)
+
+Telas implementadas:
+
+  SELECT_HERO:
+    - Exibe cards dos heróis disponíveis com seus stats.
+    - `handleHeroSelect()` monta o herói com equipamentos e
+      perks iniciais conforme o template escolhido.
+
+  BATTLE:
+    - Header com nome do andar atual e inimigo.
+    - Barras de vida animadas para player e enemy.
+    - Sprites textuais animados que se movem a cada tick.
+    - Números de dano animados sobre os sprites.
+    - Sidebar com status, equipamentos, perks ativos e log.
+    - Ao fim: overlay com opção de prosseguir ou reencarnar.
+
+  MAP_SELECTION:
+    - Exibida após cada vitória.
+    - Dois botões circulares: Batalha (⚔️) ou Evento (✨).
+    - `goToBattle()` avança para o próximo inimigo.
+    - `goToEvent()` sorteia um evento aleatório do banco.
+
+  EVENT:
+    - Card narrativo com nome, descrição e botões de escolha.
+    - `handleEventChoice()` executa a action do evento e
+      redireciona para MAP_SELECTION.
+
+Reset total do jogo:
+  - `handleReturnToHome()` reseta: floor → 1, inimigo →
+    primeiro da lista, selectedHero → null, resetGame().
+  - Chamado nos botões "Desistir" e "Reencarnar".
+
+----------------------------------------------------------------
+6. ESTILIZAÇÃO (src/index.css + Tailwind CSS)
+----------------------------------------------------------------
+  - Tailwind CSS configurado com `@import "tailwindcss"`.
+  - Tema escuro predominante (zinc-950, zinc-900).
+  - Acentos: emerald-500 (player), red-600 (enemy).
+  - Custom scrollbar `.custom-scrollbar` para o log de combate.
+  - Animações via classes do Tailwind (animate-bounce,
+    animate-pulse, transition-all, scale-110).
+
+================================================================
+  BUGS CORRIGIDOS DURANTE O DESENVOLVIMENTO
+================================================================
+1. jsx-runtime não encontrado:
+   Instalado @types/react e @types/react-dom como devDependencies.
+
+2. Recursão infinita de perks:
+   Adicionado triggerDepth + MAX_RECURSION_DEPTH no GameState.
+
+3. React não detectando mudanças de estado profundo:
+   Refatorado useGameLoop para emitir um novo objeto snapshot
+   a cada tick em vez de reutilizar a referência.
+
+4. state.log is not a function nos eventos:
+   O spread do snapshot destruía os métodos da classe.
+   Solução: reconectar métodos com .bind() no updateSnapshot().
+
+5. Jogo não resetava ao voltar para a tela inicial:
+   Criado handleReturnToHome() que reseta floor, inimigo e motor.
+
+================================================================
+  PRÓXIMOS PASSOS PLANEJADOS
+================================================================
+  [ ] Sistema de Loot — escolher itens após batalhas
+  [ ] Mais heróis e inimigos
+  [ ] Mapa visual com representação dos caminhos
+  [ ] Árvore de progressão de perks
+  [ ] Salvamento de progresso (localStorage)
+  [ ] Balanceamento de combate baseado em testes
+
+================================================================
