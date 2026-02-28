@@ -70,7 +70,7 @@ Definições criadas:
   - `Entity` — Estende EntityStats com id, name, perks, equipment.
   - `Perk` — id, name, description, trigger (EventType), action().
   - `Item` — id, name, type (weapon/armor/relic), statsModifiers.
-  - `GameEvent` — id, name, description, choices[].
+  - `GameEvent` — id, name, description, type ('positive'|'negative'|'neutral'), weight, choices[].
   - `GameEventChoice` — text, action(state).
   - `IGameState` — Interface pública usada pelo React (separa a
     classe dos componentes para facilitar testes futuros).
@@ -81,12 +81,20 @@ Definições criadas:
 3. BANCO DE DADOS ESTÁTICO (src/data/)
 ----------------------------------------------------------------
 
-registry.ts — Heróis e inimigos:
-  - HEROES.ERRANTE: hp=80, damage=12, critChance=0.15 (foco em crit)
-  - HEROES.SOBREVIVENTE: hp=100, damage=10, critChance=0.10 (tanque)
-  - ENEMIES: 4 inimigos com dificuldade crescente
-      MONSTRO_GENERICO_1 → MONSTRO_GENERICO_2 →
-      O_CARCEREIRO → FRAGMENTO_DO_DEVORADOR
+registry.ts — Heróis e inimigos (Balanceados para % Winrate específicos via simulação):
+  - HEROES.ERRANTE: hp=125, damage=8, critChance=0.15 (foco em crit)
+  - HEROES.SOBREVIVENTE: hp=155, damage=6, critChance=0.10 (tanque)
+  - HEROES.CULTISTA: hp=90, dmg=9, crit=0.20 (Transfusão Crítica nativa)
+  - HEROES.FLAGELADO: hp=160, dmg=5, crit=0.10 (Sangue Fervente nativo)
+  
+  - ENEMIES: 7 inimigos (distribuídos pelo ENEMY_PROGRESSION_POOL)
+      Verme das Sombras: hp=30, dmg=2
+      Carrasco Silencioso: hp=50, dmg=9, crit=0.15 (Sede de Sangue)
+      Espreitador do Abismo: hp=50, dmg=3
+      Casca Espinhosa: hp=75, dmg=4 (Sangue Fervente)
+      O Carcereiro: hp=90, dmg=7
+      Parasita do Abismo: hp=110, dmg=3 (Lâmina Sanguessuga)
+      Fragmento do Devorador: hp=160, dmg=8
 
 items.ts — 6 itens divididos em 3 tipos:
   - Weapons: Adaga do Errante (+3 damage, +5% crit), Hacha Dura (+5 dmg)
@@ -101,17 +109,34 @@ perks.ts — 12 perks categorizados por trigger:
   - onKill: Ímpeto de Predador (+dano temporário), Eco do Devorado (cura)
   - onHeal: Absorção de Vida (+hp máximo), Metabolismo Acelerado (+crit)
 
-events.ts — 6 eventos narrativos com 2 escolhas cada:
+events.ts — 11 eventos narrativos (com Sorteio Ponderado por pesos/weights):
+  Eventos Base (Pesos Altos: Maior recorrência):
   - Arena Silenciosa: +2 dmg ou +10% crit
   - Câmara dos Espinhos: -10 hp (com benefício futuro) ou item
   - Altar das Brasas: -15 hp +5 dmg permanente ou cura total
   - Acampamento: Cura 30% HP ou +1 dmg
   - Biblioteca Esquecida: Segredo de guerra (narrativo)
   - Eco Perdido: +5 Max HP ou +5% crit
+  
+  Ecos Ensinadores (Injetam Perks dinamicamente):
+  - O Mestre de Armas Caído: -15 Max HP p/ aprender Golpe de Embalo
+  - O Monge Sanguinário: -20 HP atual p/ aprender Transfusão Crítica
+  - A Sombra do Ladrão: -10 HP atual p/ aprender Pele Reativa
+
+  Eventos de Alto Risco (Pesos Baixos: Queda rara, consequências graves):
+  - Gás Alucinógeno: Perder 20% do HP atual ou -2 de Dano Permanente.
+  - O Ladrão de Ecos: Perder 1 Item Aleatório (com remoção de stats) ou Perder 25 de HP direto.
+
+  Exporta o helper `getRandomEvent(eventsPool)` para balanceamento RNG.
 
   Cada `choice.action(state)` modifica diretamente as
   propriedades do `state.player` ou chama métodos como
   `state.heal()`.
+
+metaTree.ts — Árvore de Meta-Progressão (Talentos Globais):
+  - Sistema persistente onde os Ecos adquiridos na jornada desbloqueiam buffs permanentes na criação do personagem.
+  - Define `TalentNode` (id, cost, prerequisites, applyEffect, tier).
+  - Árvore atual de Tiers contendo: Vitalidade I, Força Bruta I, Pele de Ferro I e Foco Crítico I.
 
 ----------------------------------------------------------------
 4. GAME LOOP (src/hooks/useGameLoop.ts)
@@ -138,19 +163,36 @@ Funções expostas pelo hook:
   - `pauseGame()` — Para o interval
   - `resetGame()` — Cria novo GameState e reinicia tudo
 
+useMetaProgression.ts — Integração com LocalStorage da Conta:
+  - Salva em cache separado (`ecos_devorados_meta`) o saldo atual da moeda (`ecos`) e o array idético `unlockedTalents: string[]`.
+  - Exibe a progressão contínua visual da tela de Title (SELECT_HERO) antes de invocar a injeção do meta state nos base templates dos personagens (`applyEffect()`).
+
 ----------------------------------------------------------------
-5. INTERFACE E FLUXO DE JOGO (src/App.tsx)
+5. ESTADO E REACT (App.tsx)
+----------------------------------------------------------------
+mapGenerator.ts — Motor de criação de andares em grafo direcionado acíclico (DAG).
+  - Cada `Row` (0 a MAX) possui uma ramificação contendo nós do tipo:
+    - `battles` (Inimigos básicos focados na pool regular).
+    - `events` (Encruzilhadas narrativas RNG via events.ts).
+    - `rest` (Acampamento fixo/garantido curativo perto do fim do andar).
+    - `elite` (Super inimigos que bloqueiam o avanço de andares).
+  - O jogador caminha entre os "Rows" do andar. 
+  - A conexão dos Nodes e sua profundidade são retidas pelo `saveManager.ts`.
+
+----------------------------------------------------------------
+6. INTERFACE E FLUXO DE JOGO (src/App.tsx)
 ----------------------------------------------------------------
 Fases do jogo (GamePhase):
-  SELECT_HERO → BATTLE → MAP_SELECTION → EVENT (opcional)
-                                       → BATTLE (próxima)
+  SELECT_HERO → BATTLE → LOOT_SELECTION → MAP_SELECTION 
+                   ↘       ↙                       ↘
+             (opcional) MAP_SELECTION ← EVENT ← MAP_SELECTION
 
 Telas implementadas:
 
   SELECT_HERO:
     - Exibe cards dos heróis disponíveis com seus stats.
-    - `handleHeroSelect()` monta o herói com equipamentos e
-      perks iniciais conforme o template escolhido.
+    - Tela apresenta botão da Árvore de Metapressão que abre o modal UI `TalentTree.tsx`.
+    - Ao confirmar `handleHeroSelect()`, ele puxa todos os talentos comprados do `useMetaProgression` hook e injeta seus respectivos buffs mutativos no `heroWithGear` ANTES de instanciar e começar a jornada.
 
   BATTLE:
     - Header com nome do andar atual e inimigo.
@@ -160,14 +202,25 @@ Telas implementadas:
     - Sidebar com status, equipamentos, perks ativos e log.
     - Ao fim: overlay com opção de prosseguir ou reencarnar.
 
+  LOOT_SELECTION:
+    - Exibida após vencer uma batalha.
+    - O pool de Itens é filtrado para remover duplicatas (itens que o jogador já tem no equipamento).
+    - Apresenta 3 cards de itens aleatórios sem repetição.
+    - Mensagem de "Baú Vazio" e contornamento caso todas as possibilidades de itens do jogo sejam extintas.
+    - Ao selecionar um item (`handleLootSelect`), os modifiers 
+      são aplicados permanentemente e a fase transita para MAP_SELECTION.
+
   MAP_SELECTION:
-    - Exibida após cada vitória.
-    - Dois botões circulares: Batalha (⚔️) ou Evento (✨).
-    - `goToBattle()` avança para o próximo inimigo.
-    - `goToEvent()` sorteia um evento aleatório do banco.
+    - Telão de renderização contendo os caminhos (Routes) construídos sobre o `mapNodes: MapNode[]` ativo.
+    - Exibe apenas os nós abertos da "Camada (Row)" correta da jornada (1 a 5).
+    - Feedback visual das intenções dos nós (Chefe Vermelho/Ameaça vs Acampamento Laranja).
+    - Ao selecionar o nó, a engine resolve a consequência através de `handleNodeSelect` e salva a progressão da profundindade do andar `currentMapRow`.
+    - `goToBattle(isElite)` invoca a mecânica de Luta e gira a roda de INIMIGOS (Progression Pool).
+    - `goToEvent()` sorteia um evento aleatório do banco e aplica Eligibility Rules (Conditions).
 
   EVENT:
-    - Card narrativo com nome, descrição e botões de escolha.
+    - Card narrativo com Feedback Visual de Risco (Verde = positivo, Vermelho/Alerta = negativo).
+    - Evento é invocado aplicando o `getRandomEvent(EVENTS)` baseado nos weights e RNG.
     - `handleEventChoice()` executa a action do evento e
       redireciona para MAP_SELECTION.
 
@@ -206,14 +259,19 @@ Reset total do jogo:
 5. Jogo não resetava ao voltar para a tela inicial:
    Criado handleReturnToHome() que reseta floor, inimigo e motor.
 
+6. Inimigo não atacava e barra de vida não atualizava:
+   O loop de combate era interrompido ao tentar executar um perk sem a função `action`.
+   Solução: Implementadas todas as actions em `perks.ts` e adicionada verificação defensiva `if (perk.action)` em `GameState.ts`.
+
 ================================================================
   PRÓXIMOS PASSOS PLANEJADOS
 ================================================================
-  [ ] Sistema de Loot — escolher itens após batalhas
-  [ ] Mais heróis e inimigos
-  [ ] Mapa visual com representação dos caminhos
-  [ ] Árvore de progressão de perks
-  [ ] Salvamento de progresso (localStorage)
-  [ ] Balanceamento de combate baseado em testes
+  [x] Sistema de Loot — escolher itens após batalhas (com Prevenção de Repetidos)
+  [x] Balanceamento de combate baseado em testes via simulação automática
+  [x] Sistema de Salvamento de progresso com reidratação (localStorage)
+  [x] Mais heróis e inimigos
+  [x] Sistema Ponderado de Sorteio de Eventos (Eventos de Risco Negativos vs Neutros)
+  [x] Mapa visual com representação dos caminhos, nós processuais e Fogueira.
+  [x] Árvore de meta-progressão de talentos permanentes comprados via Ecos da run.
 
 ================================================================

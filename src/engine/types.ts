@@ -46,6 +46,9 @@ export interface GameEvent {
   id: string;
   name: string;
   description: string;
+  type: 'positive' | 'negative' | 'neutral';
+  weight: number;
+  condition?: (state: IGameState) => boolean;
   choices: GameEventChoice[];
 }
 
@@ -59,4 +62,13 @@ export interface IGameState {
   dealDamage(attacker: Entity, target: Entity, amount: number, isCrit?: boolean, sourceType?: 'attack' | 'effect'): void;
   heal(target: Entity, amount: number): void;
   tick(): void;
+}
+
+export type MapNodeType = 'battle' | 'elite' | 'event' | 'rest';
+
+export interface MapNode {
+  id: string;
+  type: MapNodeType;
+  connectedNodes: string[];
+  row: number; // Indicates the depth in the floor routing
 }

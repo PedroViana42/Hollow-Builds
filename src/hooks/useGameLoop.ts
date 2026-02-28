@@ -45,13 +45,13 @@ export function useGameLoop(initialPlayer: Entity, initialEnemy: Entity) {
   const startGame = useCallback(() => setIsRunning(true), []);
   const pauseGame = useCallback(() => setIsRunning(false), []);
 
-  const resetGame = useCallback(() => {
-    const newState = new GameState(initialPlayer, initialEnemy);
+  const resetGame = useCallback((player: Entity, enemy: Entity) => {
+    const newState = new GameState(player, enemy);
     gameStateRef.current = newState;
     setSnapshot(newState);
     setTickCount(0);
     setIsRunning(false);
-  }, [initialPlayer, initialEnemy]);
+  }, []);
 
   return {
     gameState: snapshot,

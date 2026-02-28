@@ -29,21 +29,6 @@ export class GameState implements IGameState {
       equipment: enemy.equipment ? [...enemy.equipment] : []
     };
 
-    // Apply item stats on initialization
-    this.applyItemStats(this.player);
-    this.applyItemStats(this.enemy);
-  }
-
-  private applyItemStats(entity: Entity) {
-    if (!entity.equipment) return;
-    for (const item of entity.equipment) {
-      if (item.statsModifiers.maxHp) {
-        entity.maxHp += item.statsModifiers.maxHp;
-        entity.hp += item.statsModifiers.maxHp;
-      }
-      if (item.statsModifiers.damage) entity.damage += item.statsModifiers.damage;
-      if (item.statsModifiers.critChance) entity.critChance += item.statsModifiers.critChance;
-    }
   }
 
   log(msg: string) {
@@ -70,7 +55,9 @@ export class GameState implements IGameState {
     this.triggerDepth++;
     try {
       for (const perk of perks) {
-        perk.action(this, owner, payload);
+        if (perk.action) {
+          perk.action(this, owner, payload);
+        }
       }
     } finally {
       this.triggerDepth--;
@@ -119,13 +106,16 @@ export class GameState implements IGameState {
   }
 
   tick() {
-    if (this.isGameOver) return;
+    if (this.isGameOver || this.player.hp <= 0 || this.enemy.hp <= 0) {
+      if (!this.isGameOver) this.isGameOver = true;
+      return;
+    }
 
     // Player attacks enemy
     this.attack(this.player, this.enemy);
 
     // Enemy attacks player (if still alive)
-    if (this.enemy.hp > 0) {
+    if (this.enemy.hp > 0 && this.player.hp > 0 && !this.isGameOver) {
       this.attack(this.enemy, this.player);
     }
   }
