@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { TALENT_TREE } from '../data/metaTree';
 
-const META_SAVE_KEY = 'ecos_devorados_meta';
+const META_SAVE_KEY = 'hollow_builds_meta';
 
 export interface MetaState {
     ecos: number;

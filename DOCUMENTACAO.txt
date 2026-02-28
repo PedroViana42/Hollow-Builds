@@ -1,5 +1,5 @@
 ================================================================
-  ECOS DEVORADOS — DOCUMENTAÇÃO TÉCNICA DO MVP 0.1
+  HOLLOW BUILDS — DOCUMENTAÇÃO TÉCNICA DO MVP 0.1
 ================================================================
 Data: 27/02/2026
 Status: Em desenvolvimento ativo
@@ -7,7 +7,7 @@ Status: Em desenvolvimento ativo
 ----------------------------------------------------------------
   VISÃO GERAL
 ----------------------------------------------------------------
-Ecos Devorados é um roguelike auto-battler desenvolvido com
+Hollow Builds é um roguelike auto-battler desenvolvido com
 React + TypeScript + Vite. O jogo possui um motor de combate
 baseado em eventos (perks), sistema de equipamentos, eventos
 narrativos e progressão por andares.
@@ -164,7 +164,7 @@ Funções expostas pelo hook:
   - `resetGame()` — Cria novo GameState e reinicia tudo
 
 useMetaProgression.ts — Integração com LocalStorage da Conta:
-  - Salva em cache separado (`ecos_devorados_meta`) o saldo atual da moeda (`ecos`) e o array idético `unlockedTalents: string[]`.
+  - Salva em cache separado (`hollow_builds_meta`) o saldo atual da moeda (`ecos`) e o array idético `unlockedTalents: string[]`.
   - Exibe a progressão contínua visual da tela de Title (SELECT_HERO) antes de invocar a injeção do meta state nos base templates dos personagens (`applyEffect()`).
 
 ----------------------------------------------------------------

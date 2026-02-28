@@ -4,7 +4,7 @@ import { ITEMS } from '../data/items';
 import { PERKS } from '../data/perks';
 import { HEROES, ENEMIES } from '../data/registry';
 
-const SAVE_KEY = 'ecos_devorados_save';
+const SAVE_KEY = 'hollow_builds_save';
 
 // Essa é a estrutura minimalista e segura para JSON
 export interface SerializedSaveData {

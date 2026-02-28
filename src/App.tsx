@@ -213,7 +213,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-zinc-950 text-zinc-100 p-8 flex flex-col items-center justify-center font-sans overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_70%)] pointer-events-none"></div>
-        <h1 className="text-7xl font-black mb-4 text-emerald-500 tracking-tighter uppercase italic drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">Ecos Devorados</h1>
+        <h1 className="text-7xl font-black mb-4 text-emerald-500 tracking-tighter uppercase italic drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">Hollow Builds</h1>
 
         {hasSave && (
           <button
@@ -416,7 +416,7 @@ export default function App() {
             <div>
               <h1 className="text-xl font-bold text-emerald-500 tracking-tight flex items-center gap-2">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                Ecos Devorados
+                Hollow Builds
               </h1>
               <p className="text-xs text-zinc-500 font-mono">Andar {floor} - {currentEnemy.name}</p>
             </div>

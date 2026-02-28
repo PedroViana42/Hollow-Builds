@@ -1,8 +1,8 @@
-# ⚔️ Ecos Devorados
+# ⚔️ Hollow Builds
 
 > *"O Abismo não devora apenas carne. Ele devora memória, identidade, esperança."*
 
-**Ecos Devorados** é um roguelike auto-battler em desenvolvimento. Você escolhe um herói, avança por andares repletos de inimigos e toma decisões em eventos narrativos que moldam seu destino — até que o Eco te consuma, ou você o consuma primeiro.
+**Hollow Builds** é um roguelike auto-battler em desenvolvimento. Você escolhe um herói, avança por andares repletos de inimigos e toma decisões em eventos narrativos que moldam seu destino — até que o Eco te consuma, ou você o consuma primeiro.
 
 ---
 
