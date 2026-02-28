@@ -18,8 +18,10 @@ O jogo é dividido em turnos de exploração onde o jogador enfrenta escolhas es
 
 | Herói | Estilo | Bônus Inicial |
 | --- | --- | --- |
-| **Errante** | Crítico / Agressivo | +5% Chance de Crítico |
-| **Sobrevivente** | Tanque / Sustentação | +20 HP inicial |
+| **O Errante** | Foco Crítico e Ágil | Dano fixo + Alta Chance Crítica |
+| **O Sobrevivente** | Tanque e Sustentação | Cura ao bater / Equipado com armadura |
+| **O Cultista** | Roubo de Vida Focado | Cura Massiva em cada Crítico |
+| **O Flagelado** | Escudos e Retaliação | Reflete Dano / Diminui Dano Recebido |
 
 ---
 
@@ -49,20 +51,22 @@ Acesse em: **<http://localhost:3001>**
 
 ## 📋 Estado do Projeto
 
-> ⚠️ **MVP 0.1 em desenvolvimento** — O jogo está em fase inicial. Mecânicas, balanceamento e conteúdo estão sujeitos a mudanças frequentes.
+> ✅ **MVP 0.1 Lançado!** — A base principal do motor core auto-battler procedural foi finalizada.
 
 **Implementado:**
 
-- [x] Motor de combate com sistema de perks e eventos
-- [x] Seleção de heróis com equipamentos iniciais
-- [x] Progressão de inimigos por andares
-- [x] Eventos narrativos com escolhas que afetam o herói
-- [x] Seleção de caminho (Batalha ou Evento) entre andares
+- [x] Motor de combate com matemática exponencial baseada em Fases
+- [x] Seleção de 4 heróis com equipamentos iniciais assimétricos
+- [x] Progressão infinita de inimigos por ciclos progressivos de andares
+- [x] Geração Procedural de mapa em DAG (Directed Acyclic Graph)
+- [x] UI Rica com Sprites em Letras, animações de combate avançadas e Histórico
+- [x] Sistema RNG de Eventos Narrativos Condicionais com riscos
+- [x] Sistema de Loot (Recompensas Aleatórias para compor Builds Pós-Batalha)
+- [x] Meta-Progressão Permadeath (Ganhe "Ecos" ao morrer para comprar novos Talentos Base na Árvore Visual Global)
+- [x] Salvamento em Cache Nativo (LocalStorage) reidratando instâncias Orientadas a Objeto do motor.
 
-**Planejado:**
+**Planejado para Atualização 0.2:**
 
-- [ ] Sistema de loot (escolher itens após batalhas)
-- [ ] Mais heróis, inimigos e eventos
-- [ ] Interface de mapa visual
-- [ ] Árvore de perks progressiva
-- [ ] Salvamento de progresso
+- [ ] Novas interações entre itens consumíveis durante Eventos
+- [ ] Chefe Secreto para quem alcançar a Rota Corrompida (TBD)
+- [ ] Conquistas Locais
