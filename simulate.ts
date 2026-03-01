@@ -93,6 +93,36 @@ function simulateRun(heroTemplate: Entity): RunResult {
                 if (awardedItem.statsModifiers.damage) hero.damage += awardedItem.statsModifiers.damage;
                 if (awardedItem.statsModifiers.critChance) hero.critChance += awardedItem.statsModifiers.critChance;
             }
+
+            // Simular o Peso Narrativo (O jogador escolhe rotas de mapa para Evitar Lutas e Pegar Vantagens)
+            // 1. Simular uma Fogueira (Rest) a cada 3 andares batalhados (+25% HP)
+            if (highestFloor % 3 === 0) {
+                hero.hp = Math.min(hero.maxHp, hero.hp + Math.floor(hero.maxHp * 0.25));
+            }
+
+            // 2. Simular Buffs de Eventos Narrativos passivos (Câmara dos Espinhos, Altar, Eco Perdido) e Ecos de Habilidade.
+            // A cada 4 batalhas resolvidas ele pegou na matemática pelo menos 1 Buff e 1 Habilidade
+            if (highestFloor % 4 === 0) {
+                // Buff genérico de Status (Média dos Eventos)
+                hero.maxHp += 5;
+                hero.hp += 5;
+                hero.damage += 1;
+
+                // Simula a injeção do "Mestre de Armas" ou "Monge" ensinando Perk
+                const availablePerks = PERKS.filter(p => !hero.perks.find(xp => xp.id === p.id));
+                if (availablePerks.length > 0) {
+                    const rndPerkIndex = Math.floor(Math.random() * availablePerks.length);
+                    hero.perks.push(availablePerks[rndPerkIndex]);
+                }
+            }
+
+            // 3. Simular Efeito de Árvore de Talento Early Game (Todos os Testes do dev rodam com "Ecos" da Base comprados)
+            if (highestFloor === 1) { // Só no começo da Run pra simular Full Tree
+                hero.maxHp += 20; // Vitalidade e Pele
+                hero.hp += 20;
+                hero.damage += 2; // Força Bruta
+                hero.critChance += 0.05; // Foco Crítico
+            }
         }
     }
 

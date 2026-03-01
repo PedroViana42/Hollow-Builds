@@ -6,26 +6,26 @@ export const ITEMS: Item[] = [
         id: 'i_espada_enferrujada',
         name: 'Espada Enferrujada',
         type: 'weapon',
-        statsModifiers: { damage: 3 }
+        statsModifiers: { damage: 2 }
     },
     {
         id: 'i_adaga_errante',
         name: 'Adaga do Errante',
         type: 'weapon',
-        statsModifiers: { damage: 1, critChance: 0.10 }
+        statsModifiers: { damage: 1, critChance: 0.05 }
     },
     // Armaduras
     {
         id: 'i_cota_malha_rasgada',
         name: 'Cota de Malha Rasgada',
         type: 'armor',
-        statsModifiers: { maxHp: 20, hp: 20 }
+        statsModifiers: { maxHp: 10, hp: 10 }
     },
     {
         id: 'i_manto_sombras',
         name: 'Manto de Sombras',
         type: 'armor',
-        statsModifiers: { maxHp: 10, hp: 10, critChance: 0.05 }
+        statsModifiers: { maxHp: 5, hp: 5, critChance: 0.02 }
     },
     // Relíquias
     {

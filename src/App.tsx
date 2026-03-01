@@ -157,7 +157,7 @@ export default function App() {
     } else if (node.type === 'event') {
       goToEvent();
     } else if (node.type === 'rest') {
-      gameState.heal(gameState.player, Math.floor(gameState.player.maxHp * 0.4));
+      gameState.heal(gameState.player, Math.floor(gameState.player.maxHp * 0.25));
       gameState.log("A fogueira restaura seu vigor perdido.");
       setSelectedHero({ ...gameState.player });
       setPhase('MAP_SELECTION');

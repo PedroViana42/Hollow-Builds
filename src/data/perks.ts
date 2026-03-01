@@ -37,19 +37,19 @@ export const PERKS: Perk[] = [
         id: 'p_furia_focada',
         name: 'Fúria Focada',
         trigger: 'onCriticalHit',
-        description: '+3 dano permanente após um crítico.',
+        description: '+1 dano permanente após um crítico.',
         action: (state: IGameState, owner: Entity) => {
-            owner.damage += 3;
-            state.log(`${owner.name} concentrou fúria e ganhou +3 de dano!`);
+            owner.damage += 1;
+            state.log(`${owner.name} concentrou fúria e ganhou +1 de dano!`);
         }
     },
     {
         id: 'p_transfusao_critica',
         name: 'Transfusão Crítica',
         trigger: 'onCriticalHit',
-        description: 'Cura 5 HP ao causar um acerto crítico.',
+        description: 'Cura 3 HP ao causar um acerto crítico.',
         action: (state: IGameState, owner: Entity) => {
-            state.heal(owner, 5);
+            state.heal(owner, 3);
         }
     },
     // onDamageTaken
@@ -91,20 +91,20 @@ export const PERKS: Perk[] = [
         id: 'p_banquete_almas',
         name: 'Banquete de Almas',
         trigger: 'onKill',
-        description: 'Cura 20% do HP máximo ao derrotar um inimigo.',
+        description: 'Cura 10% do HP máximo ao derrotar um inimigo.',
         action: (state: IGameState, owner: Entity) => {
-            state.heal(owner, Math.floor(owner.maxHp * 0.2));
+            state.heal(owner, Math.floor(owner.maxHp * 0.1));
         }
     },
     {
         id: 'p_evolucao_sanguinaria',
         name: 'Evolução Sanguinária',
         trigger: 'onKill',
-        description: '+5 HP máximo permanente ao derrotar um inimigo.',
+        description: '+2 HP máximo permanente ao derrotar um inimigo.',
         action: (state: IGameState, owner: Entity) => {
-            owner.maxHp += 5;
-            owner.hp += 5;
-            state.log(`${owner.name} devorou e ganhou +5 HP máximo!`);
+            owner.maxHp += 2;
+            owner.hp += 2;
+            state.log(`${owner.name} devorou e ganhou +2 HP máximo!`);
         }
     },
     // onHeal
