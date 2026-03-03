@@ -11,6 +11,7 @@ import { useMetaProgression } from './hooks/useMetaProgression';
 import { TalentTree } from './components/TalentTree';
 import { TALENT_TREE } from './data/metaTree';
 import { scaleEnemyStats } from './utils/scaler';
+import { TarotCard } from './components/TarotCard';
 
 type GamePhase = 'SELECT_HERO' | 'BATTLE' | 'MAP_SELECTION' | 'EVENT' | 'VICTORY' | 'DEFEAT' | 'LOOT_SELECTION';
 
@@ -99,6 +100,12 @@ export default function App() {
 
   const handleWin = () => {
     if (phase === 'BATTLE') {
+      if (floor >= 10) {
+        setPhase('VICTORY');
+        saveGame(gameState, 'VICTORY', floor, mapNodes, currentMapRow);
+        return;
+      }
+
       setFloor(f => f + 1);
 
       const playerItemIds = new Set(player.equipment?.map(item => item.id) || []);
@@ -212,8 +219,7 @@ export default function App() {
   if (phase === 'SELECT_HERO') {
     return (
       <div className="min-h-screen bg-zinc-950 text-zinc-100 p-8 flex flex-col items-center justify-center font-sans overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_70%)] pointer-events-none"></div>
-        <h1 className="text-7xl font-black mb-4 text-emerald-500 tracking-tighter uppercase italic drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">Hollow Builds</h1>
+        <h1 className="text-7xl font-black mb-4 text-emerald-500 tracking-tighter uppercase italic drop-shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10">Hollow Builds</h1>
 
         {hasSave && (
           <button
@@ -232,29 +238,27 @@ export default function App() {
         </button>
 
         <p className="text-zinc-500 mb-8 font-mono tracking-widest uppercase text-xs">Selecione seu Herói para o Abismo</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full px-4 z-10">
           {Object.values(HEROES).map(hero => (
-            <button
-              key={hero.id}
-              onClick={() => handleHeroSelect(hero)}
-              className="group bg-zinc-900 border border-zinc-800 p-10 rounded-3xl hover:border-emerald-500 transition-all text-left relative overflow-hidden active:scale-95"
-            >
-              <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-20 transition-opacity">
-                <span className="text-8xl font-black">{hero.name[0]}</span>
+            <div key={hero.id} className="flex gap-4 items-center bg-zinc-900/50 border border-zinc-800/50 p-4 rounded-3xl">
+              <TarotCard
+                name={hero.name}
+                imageUrl={hero.imageUrl}
+                hp={hero.hp}
+                damage={hero.damage}
+                critChance={hero.critChance}
+                onClick={() => handleHeroSelect(hero)}
+                customClass="shrink-0"
+              />
+              <div className="flex-1">
+                <p className="text-zinc-400 text-sm leading-relaxed">
+                  {hero.id === 'h_errante' ? 'Um guerreiro ágil que busca brechas fatais nas defesas inimigas através de precisão cirúrgica.' :
+                    hero.id === 'h_sobrevivente' ? 'Um lutador resiliente que aguenta punição extrema enquanto drena a vida de seus oponentes.' :
+                      hero.id === 'h_cultista' ? 'Um herege focado em roubar a força vital ao dilacerar criticamente a carne inimiga.' :
+                        'Uma montanha de carne e cicatrizes, revoga toda dor infligida de volta em fúria incandescente.'}
+                </p>
               </div>
-              <h2 className="text-4xl font-black mb-3 group-hover:text-emerald-400 tracking-tight">{hero.name}</h2>
-              <div className="flex gap-6 mb-8 text-xs font-mono text-zinc-400">
-                <div className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500 rounded-full"></span> HP: {hero.hp}</div>
-                <div className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> Dano: {hero.damage}</div>
-                <div className="flex items-center gap-1"><span className="w-2 h-2 bg-emerald-500 rounded-full"></span> Crit: {Math.round(hero.critChance * 100)}%</div>
-              </div>
-              <p className="text-zinc-500 text-sm leading-relaxed max-w-[280px]">
-                {hero.id === 'h_errante' ? 'Um guerreiro ágil que busca brechas fatais nas defesas inimigas através de precisão cirúrgica.' :
-                  hero.id === 'h_sobrevivente' ? 'Um lutador resiliente que aguenta punição extrema enquanto drena a vida de seus oponentes.' :
-                    hero.id === 'h_cultista' ? 'Um herege focado em roubar a força vital ao dilacerar criticamente a carne inimiga.' :
-                      'Uma montanha de carne e cicatrizes, revoga toda dor infligida de volta em fúria incandescente.'}
-              </p>
-            </button>
+            </div>
           ))}
         </div>
 
@@ -317,6 +321,37 @@ export default function App() {
             </button>
           </div>
         )}
+      </div>
+    );
+  }
+
+  if (phase === 'VICTORY') {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 p-8 flex flex-col items-center justify-center font-sans overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(234,179,8,0.1),transparent_70%)] pointer-events-none"></div>
+        <h2 className="text-7xl font-black mb-6 text-amber-500 tracking-tighter uppercase italic drop-shadow-[0_0_30px_rgba(245,158,11,0.4)] z-10 text-center">
+          BIOMA 1<br />CONQUISTADO
+        </h2>
+        <p className="text-zinc-400 mb-12 text-xl max-w-2xl text-center italic z-10">
+          Você derrotou a ameaça final e sobreviveu ao primeiro estrato do Abismo.
+          Seu eco ressoará pela eternidade.
+        </p>
+
+        <div className="flex flex-col items-center gap-6 z-10">
+          <div className="text-5xl font-black text-emerald-400 animate-pulse bg-emerald-950/50 px-8 py-4 rounded-3xl border border-emerald-500/30">
+            +200 ECOS
+          </div>
+
+          <button
+            onClick={() => {
+              addEcos(200);
+              handleReturnToHome();
+            }}
+            className="mt-8 px-12 py-5 bg-zinc-100 hover:bg-white text-zinc-900 rounded-2xl font-black text-2xl transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] hover:scale-110 active:scale-95 uppercase tracking-widest"
+          >
+            Retornar ao Vazio
+          </button>
+        </div>
       </div>
     );
   }
@@ -438,13 +473,13 @@ export default function App() {
           </header>
 
           {/* Health Bars Container */}
-          <div className="grid grid-cols-2 gap-1 bg-zinc-900 p-1 rounded-3xl border border-zinc-800 overflow-hidden">
-            <div className="bg-zinc-950 p-6 rounded-2xl">
-              <div className="flex justify-between items-end mb-3">
-                <span className="font-black text-emerald-400 text-lg uppercase tracking-wider">{player.name}</span>
-                <span className="font-mono text-xs text-zinc-500">{player.hp} / {player.maxHp} HP</span>
+          <div className="grid grid-cols-2 gap-1 bg-zinc-900 p-1 rounded-3xl border border-zinc-800 overflow-hidden relative z-20 shadow-2xl -mb-10 mx-8">
+            <div className="bg-zinc-950 p-4 rounded-2xl border-r border-zinc-800/50">
+              <div className="flex justify-between items-end mb-2">
+                <span className="font-black text-emerald-400 text-sm uppercase tracking-wider">{player.name}</span>
+                <span className="font-mono text-[10px] text-zinc-500">{player.hp} / {player.maxHp} HP</span>
               </div>
-              <div className="h-5 bg-zinc-900 rounded-full p-1 border border-zinc-800">
+              <div className="h-3 bg-zinc-900 rounded-full p-0.5 border border-zinc-800">
                 <div
                   className="h-full bg-emerald-500 rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]"
                   style={{ width: `${Math.max(0, (player.hp / player.maxHp) * 100)}%` }}
@@ -452,12 +487,12 @@ export default function App() {
               </div>
             </div>
 
-            <div className="bg-zinc-950 p-6 rounded-2xl">
-              <div className="flex justify-between items-end mb-3 flex-row-reverse">
-                <span className="font-black text-red-500 text-lg uppercase tracking-wider">{enemy.name}</span>
-                <span className="font-mono text-xs text-zinc-500">{enemy.hp} / {enemy.maxHp} HP</span>
+            <div className="bg-zinc-950 p-4 rounded-2xl border-l border-zinc-800/50">
+              <div className="flex justify-between items-end mb-2 flex-row-reverse">
+                <span className="font-black text-red-500 text-sm uppercase tracking-wider">{enemy.name}</span>
+                <span className="font-mono text-[10px] text-zinc-500">{enemy.hp} / {enemy.maxHp} HP</span>
               </div>
-              <div className="h-5 bg-zinc-900 rounded-full p-1 border border-zinc-800 flex justify-end">
+              <div className="h-3 bg-zinc-900 rounded-full p-0.5 border border-zinc-800 flex justify-end">
                 <div
                   className="h-full bg-red-600 rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(220,38,38,0.5)]"
                   style={{ width: `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%` }}
@@ -467,30 +502,37 @@ export default function App() {
           </div>
 
           {/* Arena Visuals */}
-          <div className="h-80 bg-zinc-900 rounded-3xl border border-zinc-800 flex items-center justify-center gap-32 relative overflow-hidden group shadow-inner">
+          <div className="h-[450px] bg-zinc-900 rounded-3xl border border-zinc-800 flex items-center justify-center gap-16 relative overflow-hidden group shadow-inner pt-8">
             {/* Decorative Background Elements */}
             <div className="absolute inset-0 opacity-5 pointer-events-none">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-emerald-500 rounded-full"></div>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-red-500 rounded-full"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-emerald-500 rounded-full mix-blend-screen"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-red-500 rounded-full mix-blend-screen"></div>
             </div>
 
-            {/* Player Sprite */}
-            <div className={`relative z-10 w-32 h-32 bg-emerald-950 border-4 border-emerald-500 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.2)] flex items-center justify-center transition-all duration-100 ${tickCount % 2 !== 0 ? 'translate-x-4 scale-110 shadow-emerald-500/40' : 'translate-x-0 scale-100 shadow-emerald-500/10'}`}>
-              <span className="text-5xl font-black text-emerald-500 drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]">{player.name[0]}</span>
+            {/* Player Sprite as TarotCard */}
+            <div className={`relative z-10 transition-all duration-300 ${tickCount % 2 !== 0 ? 'translate-x-8 -rotate-1 scale-105 shadow-[0_0_40px_rgba(16,185,129,0.4)] rounded-2xl' : '-rotate-6 hover:-rotate-3 shadow-[0_0_20px_rgba(16,185,129,0.1)] rounded-2xl'}`}>
+              <TarotCard
+                name={player.name}
+                imageUrl={player.imageUrl}
+              />
               {isRunning && tickCount % 2 !== 0 && (
-                <div className="absolute -right-8 top-1/2 -translate-y-1/2 text-emerald-400 font-black text-2xl animate-bounce drop-shadow-md">
+                <div className="absolute -right-8 top-1/2 -translate-y-1/2 text-emerald-400 font-black text-4xl animate-bounce drop-shadow-md z-30">
                   -{player.damage}
                 </div>
               )}
             </div>
 
-            <div className="text-4xl font-black text-zinc-800 italic select-none">VS</div>
+            <div className="text-4xl font-black text-zinc-800 italic select-none z-0">VS</div>
 
-            {/* Enemy Sprite */}
-            <div className={`relative z-10 w-32 h-32 bg-red-950 border-4 border-red-600 rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.2)] flex items-center justify-center transition-all duration-100 ${tickCount % 2 === 0 && isRunning ? 'translate-x-0 scale-100 shadow-red-600/10' : '-translate-x-4 scale-110 shadow-red-600/40'}`}>
-              <span className="text-5xl font-black text-red-600 drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]">{enemy.name[0]}</span>
+            {/* Enemy Sprite as TarotCard */}
+            <div className={`relative z-10 transition-all duration-300 ${tickCount % 2 === 0 && isRunning ? 'translate-x-0 rotate-6 scale-100 shadow-[0_0_20px_rgba(220,38,38,0.1)] rounded-2xl' : '-translate-x-8 rotate-1 scale-105 shadow-[0_0_40px_rgba(220,38,38,0.4)] rounded-2xl'}`}>
+              <TarotCard
+                name={enemy.name}
+                imageUrl={enemy.imageUrl}
+                flip
+              />
               {isRunning && tickCount % 2 === 0 && (
-                <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-red-400 font-black text-2xl animate-bounce drop-shadow-md">
+                <div className="absolute -left-8 top-1/2 -translate-y-1/2 text-red-400 font-black text-4xl animate-bounce drop-shadow-md z-30">
                   -{enemy.damage}
                 </div>
               )}

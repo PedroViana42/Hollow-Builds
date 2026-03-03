@@ -15,6 +15,7 @@ export interface EntityStats {
 export interface Entity extends EntityStats {
   id: string;
   name: string;
+  imageUrl?: string;
   perks: Perk[];
   equipment?: Item[];
 }
@@ -34,7 +35,13 @@ export interface Item {
   id: string;
   name: string;
   type: ItemType;
+  imageUrl?: string;
+  tier?: number;
   statsModifiers: Partial<EntityStats>;
+  effects?: {
+    healingBonus?: number;
+    retaliationDamage?: number;
+  };
 }
 
 export interface GameEventChoice {

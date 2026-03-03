@@ -72,6 +72,13 @@ export class GameState implements IGameState {
 
     if (sourceType === 'attack') {
       this.triggerEvent('onHit', attacker, { target, amount, isCrit });
+
+      // Retaliation Damage check
+      const retaliationDmg = target.equipment?.reduce((acc, item) => acc + (item.effects?.retaliationDamage || 0), 0) || 0;
+      if (retaliationDmg > 0) {
+        this.log(`Amuleto de Espinhos ativado! ${target.name} reflete ${retaliationDmg} de dano.`);
+        this.dealDamage(target, attacker, retaliationDmg, false, 'effect');
+      }
     }
     this.triggerEvent('onDamageTaken', target, { source: attacker, amount, isCrit, sourceType });
 
@@ -90,10 +97,13 @@ export class GameState implements IGameState {
   heal(target: Entity, amount: number) {
     if (target.hp <= 0) return;
 
-    const actualHeal = Math.min(target.maxHp - target.hp, amount);
+    const healingBonus = target.equipment?.reduce((acc, item) => acc + (item.effects?.healingBonus || 0), 0) || 0;
+    const actualHealAmount = amount + healingBonus;
+
+    const actualHeal = Math.min(target.maxHp - target.hp, actualHealAmount);
     if (actualHeal > 0) {
       target.hp += actualHeal;
-      this.log(`${target.name} curou ${actualHeal} HP.`);
+      this.log(`${target.name} curou ${actualHeal} HP${healingBonus > 0 ? ` (+${healingBonus} Bônus)` : ''}.`);
       this.triggerEvent('onHeal', target, { amount: actualHeal });
     }
   }

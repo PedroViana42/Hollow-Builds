@@ -32,12 +32,16 @@ export const ITEMS: Item[] = [
         id: 'i_anel_vitalidade',
         name: 'Anel da Vitalidade',
         type: 'relic',
-        statsModifiers: {} // Efeito especial: +2 em toda cura (implementar na engine)
+        tier: 1,
+        statsModifiers: {},
+        effects: { healingBonus: 2 } // Efeito especial: +2 em toda cura
     },
     {
         id: 'i_amuleto_espinhos',
         name: 'Amuleto de Espinhos',
         type: 'relic',
-        statsModifiers: {} // Efeito especial: +1 dano em retaliações (implementar na engine)
+        tier: 1,
+        statsModifiers: {},
+        effects: { retaliationDamage: 1 } // Efeito especial: +1 dano em retaliações
     }
 ];

@@ -6,6 +6,7 @@ export const HEROES: Record<string, Entity> = {
     ERRANTE: {
         id: 'h_errante',
         name: 'Errante',
+        imageUrl: '/imgs/Herois/wanderer.jpg',
         hp: 120,
         maxHp: 120,
         damage: 6,
@@ -15,6 +16,7 @@ export const HEROES: Record<string, Entity> = {
     SOBREVIVENTE: {
         id: 'h_sobrevivente',
         name: 'Sobrevivente',
+        imageUrl: '/imgs/Herois/survivor.jpg',
         hp: 155,
         maxHp: 155,
         damage: 6,
@@ -24,6 +26,7 @@ export const HEROES: Record<string, Entity> = {
     CULTISTA: {
         id: 'h_cultista',
         name: 'Cultista Arrependido',
+        imageUrl: '/imgs/Herois/cultist.jpg',
         hp: 90,
         maxHp: 90,
         damage: 9,
@@ -33,6 +36,7 @@ export const HEROES: Record<string, Entity> = {
     FLAGELADO: {
         id: 'h_flagelado',
         name: 'O Flagelado',
+        imageUrl: '/imgs/Herois/scourged.jpg',
         hp: 160,
         maxHp: 160,
         damage: 6,
@@ -49,6 +53,7 @@ export const ENEMIES: Record<string, Entity> = {
     MONSTRO_GENERICO_1: {
         id: 'e_monstro_1',
         name: 'Verme das Sombras',
+        imageUrl: '/imgs/Inimigos/shadowWorm.jpg',
         hp: 30,
         maxHp: 30,
         damage: 2,
@@ -58,6 +63,7 @@ export const ENEMIES: Record<string, Entity> = {
     CARRASCO_SILENCIOSO: {
         id: 'e_carrasco',
         name: 'Carrasco Silencioso',
+        imageUrl: '/imgs/Inimigos/executioner.jpg',
         hp: 50,
         maxHp: 50,
         damage: 9,
@@ -67,6 +73,7 @@ export const ENEMIES: Record<string, Entity> = {
     MONSTRO_GENERICO_2: {
         id: 'e_monstro_2',
         name: 'Espreitador do Abismo',
+        imageUrl: '/imgs/Inimigos/lurker.jpg',
         hp: 50,
         maxHp: 50,
         damage: 3,
@@ -76,6 +83,7 @@ export const ENEMIES: Record<string, Entity> = {
     CASCA_ESPINHOSA: {
         id: 'e_casca_espinhosa',
         name: 'Casca Espinhosa',
+        imageUrl: '/imgs/Inimigos/thornShell.jpg',
         hp: 75,
         maxHp: 75,
         damage: 4,
@@ -85,6 +93,7 @@ export const ENEMIES: Record<string, Entity> = {
     CARCEREIRO: {
         id: 'e_carcereiro',
         name: 'O Carcereiro',
+        imageUrl: '/imgs/Inimigos/jailer.jpg',
         hp: 90,
         maxHp: 90,
         damage: 7,
@@ -94,6 +103,7 @@ export const ENEMIES: Record<string, Entity> = {
     PARASITA_ABISMO: {
         id: 'e_parasita_abismo',
         name: 'Parasita do Abismo',
+        imageUrl: '/imgs/Inimigos/parasita.jpg',
         hp: 110,
         maxHp: 110,
         damage: 3,
